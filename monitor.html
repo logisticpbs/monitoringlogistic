@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summary Material Outflow &amp; PO Monitoring — Sembung &amp; Peterongan</title>
+    <style>
+        :root {
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --sembung-bg: #eff6ff;
+            --sembung-text: #1d4ed8;
+            --peterongan-bg: #fffbeb;
+            --peterongan-text: #b45309;
+            --over-bg: #fee2e2;
+            --over-text: #991b1b;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px 16px;
+            line-height: 1.5;
+        }
+        .wrapper {
+            max-width: 1240px;
+            margin: 0 auto;
+        }
+        .header-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .title-group h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+        .title-group p {
+            margin: 4px 0 0 0;
+            font-size: 0.85rem;
+            color: var(--text-sub);
+        }
+        .sync-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            color: var(--text-sub);
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+        .dot.live { background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+        .dot.offline { background: #f59e0b; }
+        .btn-sync {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-sync:hover { background: var(--primary-hover); }
+        .btn-sync:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .toolbar {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 14px 20px;
+            border: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        select, input[type="text"] {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: var(--text-main);
+            background: #fff;
+            outline: none;
+        }
+        select:focus, input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        input[type="text"] { flex: 1; min-width: 220px; }
+        .toggle-group {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            cursor: pointer;
+            user-select: none;
+        }
+        .toggle-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .table-card {
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .table-scroll {
+            overflow-x: auto;
+            max-height: 72vh;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        thead th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            text-align: left;
+        }
+        tbody td {
+            padding: 11px 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        tbody tr:hover { background-color: #f8fafc; }
+        .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+        }
+        .val-active { font-weight: 600; color: var(--text-main); }
+        .val-zero { color: #cbd5e1; }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        .badge.sembung { background: var(--sembung-bg); color: var(--sembung-text); }
+        .badge.peterongan { background: var(--peterongan-bg); color: var(--peterongan-text); }
+        .badge-over {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--over-bg);
+            color: var(--over-text);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+        .month-tag { font-weight: 600; color: #334155; }
+        .footer-info {
+            padding: 12px 20px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header-card">
+        <div class="title-group">
+            <h1>SUMMARY MATERIAL OUTFLOW &amp; PO MONITORING</h1>
+            <p>Gudang Jombang — Stasiun Sembung &amp; Peterongan</p>
+        </div>
+        <div class="sync-group">
+            <div class="status-pill">
+                <span class="dot" id="statusDot"></span>
+                <span id="statusText">Memuat data...</span>
+            </div>
+            <button class="btn-sync" id="btnSync" onclick="syncFromGoogleSheets()">↻ Refresh Data</button>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <select id="filterStasiun" onchange="renderTable()">
+            <option value="ALL">Semua Stasiun</option>
+            <option value="SEMBUNG">SEMBUNG</option>
+            <option value="PETERONGAN">PETERONGAN</option>
+        </select>
+        <select id="filterBulan" onchange="renderTable()">
+            <option value="ALL" selected>Semua Bulan (Total Kumulatif)</option>
+        </select>
+        <input type="text" id="searchMaterial" onkeyup="renderTable()" placeholder="Cari nama material...">
+        <div class="toggle-group">
+            <label><input type="checkbox" id="hideZero" onchange="renderTable()"> Sembunyikan 0</label>
+            <label><input type="checkbox" id="filterOver" onchange="renderTable()"> Hanya Tampilkan Over-PO</label>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 120px;">STASIUN</th>
+                        <th style="width: 110px;">BULAN</th>
+                        <th>MATERIAL</th>
+                        <th class="num" style="width: 120px;">QTY PO</th>
+                        <th class="num" style="width: 130px;">QTY KELUAR</th>
+                        <th class="num" style="width: 140px;">GRAND TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+        <div class="footer-info">
+            <span id="rowCount">Menampilkan 0 baris</span>
+            <span>Sinkronisasi otomatis aktif</span>
+        </div>
+    </div>
+</div>
+
+<script>
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1ZReMh8e6eqJC5Udrr0Q3uQJ6mnfVV8gg4VhNmmfMyBA/gviz/tq?tqx=out:csv&sheet=SUMMARY";
+
+const MASTER_MATERIALS = [
+    'ADSS FO Cable - 24C',
+    'ADSS FO Cable - 48C',
+    'ADSS FO Cable - 96C',
+    'ADSS FO Cable - 144C',
+    'ADSS FO Cable - 288C',
+    'Pole 6m (2,5"/2,5mm)',
+    'Pole 6m (4"/3mm)',
+    'Pole 7m (3"/2,5"/2,5mm)',
+    'Pole 7m (4"/3”/3mm)',
+    'Pola 9m (4"/3"/2,5mm)',
+    'Pole 9m (4"/3”/3mm)',
+    'Strength Clamp 25/50 (Include Clamp A)',
+    'Strength Clamp 50/70 (Include Clamp A)',
+    'Strength Clamp 70/90 (Include Clamp A)',
+    'X Frame 80 x 80',
+    'X Frame 40 x 40',
+    'Stainless Belt 50m',
+    'Stopping Buckler',
+    'Clamp Hook',
+    'Clamp S',
+    'Clamp Ring',
+    'Mini Closure 24C',
+    'Closure - 24C',
+    'Closure - 48C',
+    'Closure - 96C',
+    'Closure - 144C',
+    'Closure - 288C',
+    'OTB (Optical Termination Box) - 48C LC/UPC',
+    'OTB (Optical Termination Box) - 96C LC/UPC',
+    'OTB (Optical Termination Box) - 144C LC/UPC',
+    'OTB (Optical Termination Box) - 288C LC/UPC',
+    'Patchcord 3m SC-LC/UPC Duplex',
+    'Patchcord 5m SC-LC/UPC Duplex',
+    'Patchcord 10m SC-LC/UPC Duplex',
+    'Patchcord 3m SC-SC/UPC Simplex',
+    'Patchcord 3m SC-SC/UPC Simplex Outdoor',
+    'HDPE Pipe 40/34',
+    'Pre-Connectorized (PreCon) Cable Blue UPC - 50m',
+    'Pre-Connectorized (PreCon) Cable Blue UPC - 100m',
+    'Pre-Connectorized (PreCon) Cable Blue UPC - 150m',
+    'ODC (Optical Distribution Cabinet) - 4P With Casette Spiltter',
+    'ODP (Optical Distribution Point) - 8P With Modular Splitter',
+    'RFID'
+];
+
+const QTY_PO = {
+    SEMBUNG: {
+        'ADSS FO Cable - 24C': 28000,
+        'ADSS FO Cable - 48C': 8000,
+        'ADSS FO Cable - 96C': 12000,
+        'ADSS FO Cable - 144C': 4000,
+        'ADSS FO Cable - 288C': 4000,
+        'Pole 6m (2,5"/2,5mm)': 1074,
+        'Pole 7m (3"/2,5"/2,5mm)': 351,
+        'Strength Clamp 25/50 (Include Clamp A)': 1024,
+        'Strength Clamp 50/70 (Include Clamp A)': 286,
+        'Strength Clamp 70/90 (Include Clamp A)': 412,
+        'X Frame 80 x 80': 353,
+        'X Frame 40 x 40': 1328,
+        'Stainless Belt 50m': 42,
+        'Stopping Buckler': 4200,
+        'Clamp Hook': 10624,
+        'Clamp S': 22702,
+        'Clamp Ring': 727,
+        'Mini Closure 24C': 30,
+        'Closure - 24C': 40,
+        'Closure - 48C': 1,
+        'Closure - 96C': 8,
+        'Closure - 144C': 3,
+        'Closure - 288C': 5,
+        'OTB (Optical Termination Box) - 288C LC/UPC': 2,
+        'Patchcord 5m SC-LC/UPC Duplex': 166,
+        'Patchcord 3m SC-SC/UPC Simplex Outdoor': 332,
+        'Pre-Connectorized (PreCon) Cable Blue UPC - 50m': 10034,
+        'Pre-Connectorized (PreCon) Cable Blue UPC - 100m': 1276,
+        'Pre-Connectorized (PreCon) Cable Blue UPC - 150m': 310,
+        'ODC (Optical Distribution Cabinet) - 4P With Casette Spiltter': 332,
+        'ODP (Optical Distribution Point) - 8P With Modular Splitter': 1328
+    },
+    PETERONGAN: {
+        'ADSS FO Cable - 24C': 20000,
+        'ADSS FO Cable - 48C': 4000,
+        'ADSS FO Cable - 96C': 8000,
+        'ADSS FO Cable - 144C': 8000,
+        'Pole 6m (2,5"/2,5mm)': 542,
+        'Pole 7m (3"/2,5"/2,5mm)': 338,
+        'Strength Clamp 25/50 (Include Clamp A)': 910,
+        'Strength Clamp 50/70 (Include Clamp A)': 470,
+        'Strength Clamp 70/90 (Include Clamp A)': 274,
+        'X Frame 80 x 80': 224,
+        'X Frame 40 x 40': 740,
+        'Stainless Belt 50m': 20,
+        'Stopping Buckler': 2000,
+        'Clamp Hook': 5920,
+        'Clamp S': 13222,
+        'Clamp Ring': 691,
+        'Closure - 24C': 31,
+        'Closure - 96C': 4,
+        'Closure - 144C': 4,
+        'OTB (Optical Termination Box) - 96C LC/UPC': 1,
+        'OTB (Optical Termination Box) - 144C LC/UPC': 1,
+        'Patchcord 3m SC-LC/UPC Duplex': 93,
+        'Patchcord 3m SC-SC/UPC Simplex Outdoor': 185,
+        'Pre-Connectorized (PreCon) Cable Blue UPC - 50m': 6887,
+        'Pre-Connectorized (PreCon) Cable Blue UPC - 100m': 1084,
+        'Pre-Connectorized (PreCon) Cable Blue UPC - 150m': 329,
+        'ODC (Optical Distribution Cabinet) - 4P With Casette Spiltter': 185,
+        'ODP (Optical Distribution Point) - 8P With Modular Splitter': 740
+    }
+};
+
+let ACTIVE_MONTHS = ['Okt', 'Nov'];
+let SUMMARY_DATA = {
+    SEMBUNG: {
+        'ADSS FO Cable - 24C': { Okt: 30710, Nov: 0, GrandTotal: 30710 },
+        'ADSS FO Cable - 48C': { Okt: 2900, Nov: 0, GrandTotal: 2900 },
+        'ADSS FO Cable - 96C': { Okt: 7750, Nov: 0, GrandTotal: 7750 },
+        'ADSS FO Cable - 288C': { Okt: 4000, Nov: 0, GrandTotal: 4000 },
+        'Pole 6m (2,5"/2,5mm)': { Okt: 754, Nov: 33, GrandTotal: 787 },
+        'Pole 7m (3"/2,5"/2,5mm)': { Okt: 234, Nov: 0, GrandTotal: 234 },
+        'Strength Clamp 25/50 (Include Clamp A)': { Okt: 1024, Nov: 0, GrandTotal: 1024 },
+        'Strength Clamp 50/70 (Include Clamp A)': { Okt: 286, Nov: 0, GrandTotal: 286 },
+        'Strength Clamp 70/90 (Include Clamp A)': { Okt: 250, Nov: 0, GrandTotal: 250 },
+        'X Frame 80 x 80': { Okt: 300, Nov: 0, GrandTotal: 300 },
+        'X Frame 40 x 40': { Okt: 235, Nov: 40, GrandTotal: 275 },
+        'Stainless Belt 50m': { Okt: 23, Nov: 1, GrandTotal: 24 },
+        'Stopping Buckler': { Okt: 4720, Nov: 100, GrandTotal: 4820 },
+        'Clamp S': { Okt: 577, Nov: 180, GrandTotal: 757 },
+        'Clamp Ring': { Okt: 425, Nov: 120, GrandTotal: 545 },
+        'Patchcord 3m SC-SC/UPC Simplex Outdoor': { Okt: 46, Nov: 30, GrandTotal: 76 },
+        'Pre-Connectorized (PreCon) Cable Blue UPC - 50m': { Okt: 137, Nov: 22, GrandTotal: 159 },
+        'Pre-Connectorized (PreCon) Cable Blue UPC - 100m': { Okt: 81, Nov: 15, GrandTotal: 96 },
+        'Pre-Connectorized (PreCon) Cable Blue UPC - 150m': { Okt: 20, Nov: 0, GrandTotal: 20 },
+        'ODC (Optical Distribution Cabinet) - 4P With Casette Spiltter': { Okt: 46, Nov: 0, GrandTotal: 46 },
+        'ODP (Optical Distribution Point) - 8P With Modular Splitter': { Okt: 200, Nov: 50, GrandTotal: 250 }
+    },
+    PETERONGAN: {
+        'ADSS FO Cable - 24C': { Okt: 8150, Nov: 6250, GrandTotal: 14400 },
+        'ADSS FO Cable - 48C': { Okt: 3500, Nov: 0, GrandTotal: 3500 },
+        'ADSS FO Cable - 96C': { Okt: 4000, Nov: 0, GrandTotal: 4000 },
+        'ADSS FO Cable - 144C': { Okt: 2800, Nov: 0, GrandTotal: 2800 },
+        'Pole 6m (2,5"/2,5mm)': { Okt: 319, Nov: 105, GrandTotal: 424 },
+        'Pole 7m (3"/2,5"/2,5mm)': { Okt: 107, Nov: 60, GrandTotal: 167 },
+        'Strength Clamp 25/50 (Include Clamp A)': { Okt: 750, Nov: 250, GrandTotal: 1000 },
+        'Strength Clamp 50/70 (Include Clamp A)': { Okt: 322, Nov: 0, GrandTotal: 322 },
+        'Strength Clamp 70/90 (Include Clamp A)': { Okt: 262, Nov: 0, GrandTotal: 262 },
+        'X Frame 80 x 80': { Okt: 24, Nov: 115, GrandTotal: 139 },
+        'Stainless Belt 50m': { Okt: 7, Nov: 11, GrandTotal: 18 },
+        'Stopping Buckler': { Okt: 900, Nov: 0, GrandTotal: 900 }
+    }
+};
+
+function parseCSV(text) {
+    const rows = [];
+    let row = [], cell = '', inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i], next = text[i + 1];
+        if (ch === '"' && inQuotes && next === '"') { cell += '"'; i++; }
+        else if (ch === '"') { inQuotes = !inQuotes; }
+        else if (ch === ',' && !inQuotes) { row.push(cell.trim()); cell = ''; }
+        else if ((ch === '\r' || ch === '\n') && !inQuotes) {
+            if (ch === '\r' && next === '\n') i++;
+            row.push(cell.trim()); rows.push(row); row = []; cell = '';
+        } else { cell += ch; }
+    }
+    if (cell.length > 0 || row.length > 0) { row.push(cell.trim()); rows.push(row); }
+    return rows;
+}
+
+function parseNumber(val) {
+    if (!val) return 0;
+    const num = Number(val.replace(/[^0-9.-]/g, ''));
+    return isNaN(num) ? 0 : num;
+}
+
+async function syncFromGoogleSheets() {
+    const btn = document.getElementById('btnSync');
+    const dot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(SHEET_CSV_URL + "&t=" + Date.now());
+        if (!res.ok) throw new Error("Akses ditolak");
+        const csvText = await res.text();
+        if (csvText.includes("<!DOCTYPE html>")) throw new Error("Sheet belum Public");
+
+        const rows = parseCSV(csvText);
+        let currentStation = null;
+        let monthCols = {};
+        let grandTotalCol = -1;
+        const parsedData = { SEMBUNG: {}, PETERONGAN: {} };
+        const foundMonths = new Set();
+
+        rows.forEach(r => {
+            const col0 = (r[0] || '').trim();
+            if (col0 === 'SEMBUNG' || col0 === 'PETERONGAN') {
+                currentStation = col0;
+                monthCols = {};
+                grandTotalCol = -1;
+                return;
+            }
+            if (!currentStation) return;
+
+            const hasGrandTotal = r.findIndex(c => c.toLowerCase() === 'grand total');
+            if (hasGrandTotal !== -1) {
+                grandTotalCol = hasGrandTotal;
+                r.forEach((cellVal, idx) => {
+                    if (idx > 0 && idx < grandTotalCol && cellVal && !cellVal.toLowerCase().includes('total')) {
+                        monthCols[idx] = cellVal;
+                        foundMonths.add(cellVal);
+                    }
+                });
+                return;
+            }
+
+            if (col0 && col0 !== 'Material' && col0 !== 'Grand Total' && col0 !== 'SUM of Qty Keluar' && grandTotalCol !== -1) {
+                const matEntry = { GrandTotal: parseNumber(r[grandTotalCol]) };
+                Object.entries(monthCols).forEach(([idx, mName]) => {
+                    matEntry[mName] = parseNumber(r[Number(idx)]);
+                });
+                parsedData[currentStation][col0] = matEntry;
+            }
+        });
+
+        if (Object.keys(parsedData.SEMBUNG).length > 0 || Object.keys(parsedData.PETERONGAN).length > 0) {
+            SUMMARY_DATA = parsedData;
+            if (foundMonths.size > 0) ACTIVE_MONTHS = Array.from(foundMonths);
+            updateMonthDropdown();
+            dot.className = 'dot live';
+            const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            statusText.textContent = `Live Sync (${now})`;
+        }
+    } catch (e) {
+        dot.className = 'dot offline';
+        statusText.textContent = 'Mode Offline (Menggunakan data lokal)';
+    } finally {
+        btn.disabled = false;
+        renderTable();
+    }
+}
+
+function updateMonthDropdown() {
+    const sel = document.getElementById('filterBulan');
+    const prev = sel.value;
+    sel.innerHTML = '<option value="ALL">Semua Bulan (Total Kumulatif)</option>' + 
+        ACTIVE_MONTHS.map(m => `<option value="${m}">${m}</option>`).join('');
+    if (ACTIVE_MONTHS.includes(prev) || prev === 'ALL') sel.value = prev;
+}
+
+function fmt(num) {
+    return (num || 0).toLocaleString('id-ID');
+}
+
+function renderTable() {
+    const fStasiun = document.getElementById('filterStasiun').value;
+    const fBulan = document.getElementById('filterBulan').value;
+    const qMat = document.getElementById('searchMaterial').value.toLowerCase();
+    const hideZero = document.getElementById('hideZero').checked;
+    const filterOver = document.getElementById('filterOver').checked;
+    const tbody = document.getElementById('tableBody');
+
+    const stasiunList = fStasiun === 'ALL' ? ['SEMBUNG', 'PETERONGAN'] : [fStasiun];
+
+    let html = '';
+    let count = 0;
+
+    stasiunList.forEach(stasiun => {
+        MASTER_MATERIALS.forEach(mat => {
+            if (qMat && !mat.toLowerCase().includes(qMat)) return;
+
+            const item = (SUMMARY_DATA[stasiun] && SUMMARY_DATA[stasiun][mat]) || {};
+            const qtyPO = (QTY_PO[stasiun] && QTY_PO[stasiun][mat]) || 0;
+            const grandTotal = item.GrandTotal || 0;
+
+            if (fBulan === 'ALL') {
+                // Mode Semua Bulan: Tampilkan 1 baris total kumulatif per material
+                const isOver = qtyPO > 0 && grandTotal > qtyPO;
+                if (filterOver && !isOver) return;
+                if (hideZero && grandTotal === 0 && qtyPO === 0) return;
+
+                count++;
+                const badgeClass = stasiun === 'SEMBUNG' ? 'sembung' : 'peterongan';
+
+                html += `
+                    <tr>
+                        <td><span class="badge ${badgeClass}">${stasiun}</span></td>
+                        <td class="month-tag" style="color: #64748b; font-style: italic;">Total Kumulatif</td>
+                        <td>${mat}</td>
+                        <td class="num ${qtyPO === 0 ? 'val-zero' : ''}">${fmt(qtyPO)}</td>
+                        <td class="num ${grandTotal > 0 ? 'val-active' : 'val-zero'}">${fmt(grandTotal)}</td>
+                        <td class="num ${grandTotal > 0 ? 'val-active' : 'val-zero'}">
+                            ${fmt(grandTotal)}
+                            ${isOver ? '<span class="badge-over">⚠️ OVER</span>' : ''}
+                        </td>
+                    </tr>
+                `;
+            } else {
+                // Mode Per Bulan Tertentu
+                const qtyBulan = item[fBulan] || 0;
+                const isOver = qtyPO > 0 && grandTotal > qtyPO;
+                if (filterOver && !isOver) return;
+                if (hideZero && qtyBulan === 0 && grandTotal === 0 && qtyPO === 0) return;
+
+                count++;
+                const badgeClass = stasiun === 'SEMBUNG' ? 'sembung' : 'peterongan';
+
+                html += `
+                    <tr>
+                        <td><span class="badge ${badgeClass}">${stasiun}</span></td>
+                        <td class="month-tag">${fBulan}</td>
+                        <td>${mat}</td>
+                        <td class="num ${qtyPO === 0 ? 'val-zero' : ''}">${fmt(qtyPO)}</td>
+                        <td class="num ${qtyBulan > 0 ? 'val-active' : 'val-zero'}">${fmt(qtyBulan)}</td>
+                        <td class="num ${grandTotal > 0 ? 'val-active' : 'val-zero'}">
+                            ${fmt(grandTotal)}
+                            ${isOver ? '<span class="badge-over">⚠️ OVER</span>' : ''}
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+    });
+
+    tbody.innerHTML = html || `<tr><td colspan="6" style="text-align:center; padding:24px; color:#64748b;">Tidak ada material yang cocok dengan filter.</td></tr>`;
+    document.getElementById('rowCount').textContent = `Menampilkan ${count} baris data`;
+}
+
+updateMonthDropdown();
+syncFromGoogleSheets();
+setInterval(syncFromGoogleSheets, 60000);
+</script>
+
+</body>
+</html>
